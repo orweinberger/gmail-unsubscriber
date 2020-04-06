@@ -1,0 +1,113 @@
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <style>
+    .loading {
+      margin-top: 25px;
+    }
+
+    .light {
+      color: #666;
+      display: inline-block;
+      padding-left: 15px;
+      text-overflow: ellipsis;
+    }
+
+    .count {
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: inline-block;
+      background: #fff;
+      border: 2px solid #666;
+      color: #666;
+      text-align: center;
+      margin-right: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <v-app>
+      <v-app-bar app color="indigo" dark>
+        <v-toolbar-title>Gmail Unsubscriber</v-toolbar-title>
+      </v-app-bar>
+
+      <v-content>
+        <v-container class="fill-height" fluid v-if="loading">
+          <v-row align="center" justify="center">
+            <v-col class="text-center">
+              <v-progress-circular :size="70" :width="7" color="purple" indeterminate></v-progress-circular>
+              <div class="loading">Loading last 1,000 emails</div>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-container fluid v-if="!loading">
+          <v-row>
+            <v-list dense min-width="100%">
+              <template v-for="(value, name) in messages">
+                <v-list-item>
+                  <div class="count">{{value.count}}</div>
+                  <v-list-item-content>
+                    <v-list-item-title><strong>{{name}}</strong>
+                      <div class="light">{{value.last}}</div>
+                    </v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn :href="value.unsubscribe" color="indigo" text target="_blank">
+                      unsub
+                    </v-btn>
+                  </v-list-item-action>
+                  <v-list-item-icon>
+                    <v-btn icon :href="'https://mail.google.com/mail/u/0/#search/from%3A' + name" target="_blank">
+                      <v-icon>fas fa-search</v-icon>
+                    </v-btn>
+                  </v-list-item-icon>
+                </v-list-item>
+                <v-divider></v-divider>
+              </template>
+            </v-list>
+          </v-row>
+        </v-container>
+      </v-content>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: {
+        loading: true,
+        messages: []
+      },
+      mounted() {
+        this.listMessages();
+      },
+      methods: {
+        listMessages() {
+          axios
+            .get('http://localhost:3000/api/messages/list')
+            .then(response => {
+              this.messages = response.data
+              this.loading = false;
+              console.log(this.messages);
+            })
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>
